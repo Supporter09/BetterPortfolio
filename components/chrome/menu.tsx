@@ -54,7 +54,7 @@ export function Menu() {
   const currentRef = useRef<HTMLAnchorElement>(null);
   const runtime = useMotionRuntime();
   const tier = useMotionTier();
-
+  const motionOptOut = tier !== null && getMotionOptOut();
   const closeThen = (action: () => void) => {
     pending.current = action;
     setOpen(false);
@@ -179,12 +179,12 @@ export function Menu() {
                 </button>
                 <button
                   type="button"
-                  aria-pressed={tier !== 'C'}
-                  onClick={() => setMotionEnabled(tier === 'C')}
+                  aria-pressed={motionOptOut}
+                  onClick={() => setMotionEnabled(motionOptOut)}
                   className="inline-flex min-h-11 items-center gap-3 self-start text-body text-ink-2 transition-colors hover-fine:text-ink"
                 >
-                  Animations / Motion
-                  <span className="label-mono text-ink-3">{tier === 'C' ? 'Off' : 'On'}</span>
+                  Reduce motion
+                  <span className="label-mono text-ink-3">{motionOptOut ? 'On' : 'Off'}</span>
                 </button>
               </section>
 

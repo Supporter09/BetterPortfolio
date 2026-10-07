@@ -5,27 +5,18 @@ import { DESKTOP_FINE_QUERY, MOTION_CONDITIONS, MOTION_PREF_KEY } from '@/lib/mo
 
 export type MotionTier = 'A' | 'B' | 'C';
 
-/** Returns user-chosen preference: 'on' | 'off' | null (unset). */
-export function getMotionPreference(): 'on' | 'off' | null {
+/** True when the visitor explicitly chose "Motion: off" (persisted in localStorage.runtime_motion). */
+export function getMotionOptOut(): boolean {
   try {
-    const val = localStorage.getItem(MOTION_PREF_KEY);
-    return val === 'on' || val === 'off' ? val : null;
+    return localStorage.getItem(MOTION_PREF_KEY) === 'off';
   } catch {
-    return null;
+    return false;
   }
 }
 
-/** Backward compatibility helper for opt-out check. */
-export function getMotionOptOut(): boolean {
-  return getMotionPreference() === 'off';
-}
-
-/** Explicit 'on' overrides OS reduce; explicit 'off' forces C; otherwise OS reduce → C → desktop+fine → B. */
-function computeTier(): MotionTier {
-  const pref = getMotionPreference();
-  if (pref === 'off') return 'C';
-  if (pref === 'on') return window.matchMedia(DESKTOP_FINE_QUERY).matches ? 'A' : 'B';
-  if (window.matchMedia(MOTION_CONDITIONS.reduce).matches) return 'C';
+/** Default has animation: desktop+fine is A, other is B; explicit opt-out is C. */
+function computeTier(optOut = getMotionOptOut()): MotionTier {
+  if (optOut) return 'C';
   return window.matchMedia(DESKTOP_FINE_QUERY).matches ? 'A' : 'B';
 }
 
@@ -83,12 +74,12 @@ export function useMotionTier(): MotionTier | null {
  */
 export function setMotionEnabled(enabled: boolean): void {
   try {
-    localStorage.setItem(MOTION_PREF_KEY, enabled ? 'on' : 'off');
+    if (enabled) localStorage.removeItem(MOTION_PREF_KEY);
+    else localStorage.setItem(MOTION_PREF_KEY, 'off');
   } catch {
     // storage blocked: still apply for this page view below
   }
-  const root = document.documentElement;
-  if (!enabled) delete root.dataset.boot; // never leave the cold open mid-play in Tier C
-  root.dataset.tier = computeTier();
-  listeners.forEach((listener) => listener());
+  if (typeof window !== 'undefined') {
+    window.location.reload();
+  }
 }

@@ -8,4 +8,4 @@
  * Media queries MUST stay 1:1 with `MOTION_CONDITIONS` in `lib/motion/conditions.ts`.
  * The string is a constant so a CSP `sha256-…` hash can be computed before build.
  */
-export const BOOT_SCRIPT = `(function(){try{var d=document.documentElement,m=function(q){return matchMedia(q).matches},o=null;try{o=localStorage.getItem('runtime_motion')}catch(e){}var t=o==='off'?'C':(o==='on'?(m('(min-width:1024px) and (pointer:fine)')?'A':'B'):(m('(prefers-reduced-motion: reduce)')?'C':(m('(min-width:1024px) and (pointer:fine)')?'A':'B')));d.dataset.tier=t;d.dataset.js='';if(t!=='C'&&location.pathname==='/'&&!location.hash&&!sessionStorage.getItem('runtime_boot_seen'))d.dataset.boot='play';}catch(e){}})();`;
+export const BOOT_SCRIPT = `(function(){try{var d=document.documentElement,m=function(q){return matchMedia(q).matches},o=null;try{o=localStorage.getItem('runtime_motion')}catch(e){}var t=o==='off'?'C':(m('(min-width:1024px) and (pointer:fine)')?'A':'B');d.dataset.tier=t;d.dataset.js='';if(t!=='C'&&location.pathname==='/'&&!location.hash&&!sessionStorage.getItem('runtime_boot_seen'))d.dataset.boot='play';}catch(e){}})();`;
