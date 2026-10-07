@@ -14,10 +14,43 @@ import { Cursor } from '@/components/chrome/cursor';
 import { Footer } from '@/components/chrome/footer';
 
 export const metadata: Metadata = {
-  title: 'Mai Van Nhat Minh — Security · Reliability · Story',
+  metadataBase: new URL('https://nhatminhportfolio.vercel.app'),
+  title: {
+    default: 'Mai Van Nhat Minh — Security · Reliability · Story',
+    template: '%s · Mai Van Nhat Minh',
+  },
   description: SITE.headline,
   applicationName: 'RUNTIME',
   authors: [{ name: SITE.name }],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://nhatminhportfolio.vercel.app',
+    siteName: 'Mai Van Nhat Minh',
+    title: 'Mai Van Nhat Minh — Security · Reliability · Story',
+    description: SITE.headline,
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'Mai Van Nhat Minh — Security · Reliability · Story',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Mai Van Nhat Minh — Security · Reliability · Story',
+    description: SITE.headline,
+    images: ['/og.png'],
+  },
 };
 
 export const viewport: Viewport = {
