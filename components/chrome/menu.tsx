@@ -55,6 +55,7 @@ export function Menu() {
   const runtime = useMotionRuntime();
   const tier = useMotionTier();
   const motionOptOut = tier !== null && getMotionOptOut();
+
   const closeThen = (action: () => void) => {
     pending.current = action;
     setOpen(false);
