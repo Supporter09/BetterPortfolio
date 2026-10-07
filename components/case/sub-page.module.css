@@ -1,0 +1,145 @@
+/* /archive, /films, 404 — shared header + page-specific layouts. Tokens from app/globals.css. */
+
+.page {
+  position: relative;
+  isolation: isolate;
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: min(90svh, 820px);
+  z-index: -1;
+  pointer-events: none;
+  background: var(--page-grade, none);
+}
+
+.page[data-grade="teal"] {
+  --page-grade:
+    radial-gradient(70% 55% at 15% 0%, color-mix(in srgb, var(--grade-teal) 7%, transparent), transparent 70%);
+}
+
+.page[data-grade="amber"] {
+  --page-grade:
+    radial-gradient(70% 55% at 85% 0%, color-mix(in srgb, var(--grade-amber) 8%, transparent), transparent 70%),
+    radial-gradient(ellipse at 50% 0%, transparent 55%, rgb(10 10 11 / 0.4) 100%);
+}
+
+.header {
+  padding-top: calc(var(--spacing-hud) + clamp(2rem, 6vh, 4.5rem));
+  padding-bottom: clamp(2.5rem, 7vh, 5rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.title {
+  max-width: 22ch;
+  font-size: var(--text-display-xl);
+  line-height: 1.08;
+  letter-spacing: var(--text-display-xl--letter-spacing);
+  font-weight: var(--text-display-xl--font-weight);
+  color: var(--ink);
+}
+
+.section {
+  padding-block: clamp(2.5rem, 7vh, 5rem) clamp(3rem, 8vh, 6rem);
+}
+
+/* ------------------------------------------------------------------
+   /archive — compact list, no highlight (master §4.1)
+------------------------------------------------------------------- */
+.archiveList {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+
+.archiveRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem var(--spacing-gutter);
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (width >= 48rem) {
+  .archiveRow {
+    grid-template-columns: 5rem minmax(0, 1fr) auto;
+    align-items: start;
+    padding-block: 1.75rem;
+  }
+}
+
+.archiveYear {
+  font-family: var(--font-pixel);
+  font-size: var(--text-pixel-sm);
+  letter-spacing: var(--text-pixel-sm--letter-spacing);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums slashed-zero;
+  padding-top: 0.45em;
+}
+
+.archiveLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  color: var(--grade-teal);
+  font-size: var(--text-body-sm);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .archiveLink:hover {
+    color: var(--teal-hover);
+    text-decoration-thickness: 2px;
+  }
+}
+
+/* ------------------------------------------------------------------
+   /films — contact-sheet grid
+------------------------------------------------------------------- */
+.filmGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3rem) var(--spacing-gutter);
+}
+
+@media (width >= 48rem) {
+  .filmGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 64rem) {
+  .filmGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.filmCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.filmMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding-top: 0.5rem;
+}
+
+/* ------------------------------------------------------------------
+   404
+------------------------------------------------------------------- */
+.notFound {
+  min-height: calc(100svh - var(--spacing-hud));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

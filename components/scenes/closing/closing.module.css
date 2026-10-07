@@ -1,0 +1,75 @@
+/* Scene 09 — Closing (round 2 §5). CTA on the mixed grade, then a fade to --bg-0 for END OF RUNTIME. */
+
+/* Fade-to-black layer: covers the scene grade (z -1) but sits under the content (z 10).
+   Default (SSR / Tier B / Tier C): transparent — the end card carries its own static gradient.
+   Tier A: opacity scrubbed 0 → 1 as the end card approaches. */
+.fade {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--bg-0);
+  opacity: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+}
+
+/* ---------------- Climax CTA ---------------- */
+.ctaWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Amber frame around the primary CTA (decorative; fades in with the CTA). */
+.ctaFrame {
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--grade-amber) 45%, transparent);
+}
+
+/* ---------------- END OF RUNTIME card ---------------- */
+.endCard {
+  position: relative;
+  margin-top: var(--spacing-section);
+  padding-block: clamp(5rem, 14vh, 10rem) clamp(4rem, 10vh, 7rem);
+  text-align: center;
+  background: linear-gradient(to bottom, transparent, var(--bg-0) 45%);
+}
+
+.endTitle {
+  margin: 0;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* REC → STOP marker above the title. Both glyphs render; the stop square is the final state,
+   the REC dot is only shown (then crossfaded away) by the Tier A/B beat. */
+.marker {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+}
+
+.marker > * {
+  grid-area: 1 / 1;
+}
+
+.stop {
+  width: 8px;
+  height: 8px;
+  background-color: var(--ink);
+}
+
+.rec {
+  width: 8px;
+  height: 8px;
+  opacity: 0;
+}

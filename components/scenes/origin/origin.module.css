@@ -1,0 +1,131 @@
+/* Scene 02 — Origin (02a Scene 02). Graded portrait + sticky column (CSS only, no GSAP pin). */
+
+.portrait {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--bg-1);
+  border: 1px solid var(--line);
+}
+
+/* ---------------------------------------------------------------
+   Receiving the digitize stream (round 2 §4). Once the opening's stream is armed (JS, Tier A/B) the media
+   waits at opacity 0 inside an empty "no signal" frame; `data-received` on the figure fades it in (400 ms).
+   Not armed (Tier C, no JS, runtime missing) → nothing is hidden. Reversible: scrolling up removes it.
+---------------------------------------------------------------- */
+.media {
+  position: relative;
+  transition: opacity 400ms var(--ease-standard);
+}
+
+:global(html[data-tier="A"]) [data-origin-figure][data-stream="armed"]:not([data-received]) .media,
+:global(html[data-tier="B"]) [data-origin-figure][data-stream="armed"]:not([data-received]) .media {
+  opacity: 0;
+}
+
+/* Faint dot grid behind the media: the "screen" the pixels land on. Visible only while waiting. */
+.signal {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--grade-amber) 35%, transparent) 1px, transparent 1.5px);
+  background-size: 6px 6px;
+  transition: opacity 400ms var(--ease-standard);
+}
+
+:global(html[data-tier="A"]) [data-origin-figure][data-stream="armed"]:not([data-received]) .signal,
+:global(html[data-tier="B"]) [data-origin-figure][data-stream="armed"]:not([data-received]) .signal {
+  opacity: 0.5;
+}
+
+/* Crop the 2:3 photo to 4:5 so the sticky column always fits a laptop viewport (aspect box sits inside the dither wrapper). */
+.portraitMedia :global(.dither-reveal) > div:first-child {
+  aspect-ratio: 4 / 5 !important;
+}
+
+/* Grade step 1: monochrome plate (static filter; never animated). */
+.portraitMedia :global(img) {
+  object-position: 50% 22%;
+  filter: grayscale(1) contrast(1.08) brightness(0.94);
+}
+
+/* Grade step 2: amber duotone — highlights amber, shadows lifted toward deep teal. */
+.duotone,
+.lift,
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.duotone {
+  mix-blend-mode: multiply;
+  opacity: 0.92;
+  background: linear-gradient(
+    165deg,
+    var(--grade-amber) 0%,
+    color-mix(in srgb, var(--grade-amber) 82%, var(--bg-0)) 55%,
+    color-mix(in srgb, var(--grade-amber) 55%, var(--bg-0)) 100%
+  );
+}
+
+.lift {
+  mix-blend-mode: screen;
+  background: color-mix(in srgb, var(--grade-teal) 9%, var(--bg-0));
+}
+
+.vignette {
+  background:
+    radial-gradient(120% 85% at 40% 25%, transparent 45%, rgb(10 10 11 / 0.6) 100%),
+    linear-gradient(to top, rgb(10 10 11 / 0.45), transparent 35%);
+}
+
+/* Viewfinder corners (01 §5.6) as one element so B2.2 can scale them as a set. */
+.corners {
+  --vf-c: var(--grade-amber);
+  --vf-len: 14px;
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--vf-c) 0 0) top left / var(--vf-len) 1px,
+    linear-gradient(var(--vf-c) 0 0) top left / 1px var(--vf-len),
+    linear-gradient(var(--vf-c) 0 0) top right / var(--vf-len) 1px,
+    linear-gradient(var(--vf-c) 0 0) top right / 1px var(--vf-len),
+    linear-gradient(var(--vf-c) 0 0) bottom left / var(--vf-len) 1px,
+    linear-gradient(var(--vf-c) 0 0) bottom left / 1px var(--vf-len),
+    linear-gradient(var(--vf-c) 0 0) bottom right / var(--vf-len) 1px,
+    linear-gradient(var(--vf-c) 0 0) bottom right / 1px var(--vf-len);
+  background-repeat: no-repeat;
+}
+
+@media (width >= 64rem) {
+  .corners {
+    --vf-len: 20px;
+    inset: -10px;
+  }
+}
+
+/* Focus mark: centre crosshair, quiet. */
+.corners::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  translate: -50% -50%;
+  opacity: 0.5;
+  background:
+    linear-gradient(var(--vf-c) 0 0) center / 14px 1px no-repeat,
+    linear-gradient(var(--vf-c) 0 0) center / 1px 14px no-repeat;
+}
+
+.quoteMark {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 4.5rem;
+  line-height: 0.6;
+  height: 0.45em;
+  color: var(--grade-amber);
+}

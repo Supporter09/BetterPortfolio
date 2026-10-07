@@ -1,0 +1,88 @@
+/* Scene 05 — Next Scene (round 2 §5). Four storyboard panels with pixel sprites; nothing else. */
+
+.cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--spacing-gutter);
+}
+
+@media (width >= 48rem) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 64rem) {
+  .cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Storyboard panel: dashed = not shot yet. */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 100%;
+  padding: 1.25rem;
+  border: 1px dashed var(--line-strong);
+  background-color: color-mix(in srgb, var(--bg-1) 70%, transparent);
+  transition: border-color var(--dur-fast) var(--ease-standard);
+}
+
+@media (width >= 48rem) {
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+/* Panel number in the corner (decorative). */
+.cardIndex {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  color: var(--ink-3);
+}
+
+/* 16×16 sprite at scale 3 (48px), top-left. Floats 4px on hover — transform only, Tier C static. */
+.sprite {
+  display: block;
+  margin-bottom: 0.5rem;
+  transition: transform var(--dur-base) var(--ease-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    border-color: var(--ink-3);
+  }
+
+  .card:hover .sprite {
+    transform: translateY(-4px);
+  }
+}
+
+:global(html[data-tier="C"]) .sprite {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sprite {
+    transition: none;
+  }
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-md);
+  line-height: var(--text-heading-md--line-height);
+  letter-spacing: var(--text-heading-md--letter-spacing);
+  font-weight: var(--text-heading-md--font-weight);
+  text-wrap: balance;
+  color: var(--ink);
+}
+
+.cardSummary {
+  margin-top: auto;
+  color: var(--ink-2);
+}

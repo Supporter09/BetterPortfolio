@@ -1,0 +1,60 @@
+/* Scene 03 — origin → timeline energy line (round-2 contract §4). Decorative only.
+   The <svg> covers the `.tl` wrapper (position: absolute, inset 0) with visible overflow, so the path can run
+   into negative y — up over the end of the origin scene — without the SVG box ever changing size (no layout
+   shift). Hidden by default: no-JS, Tier C and < 1024 (where the portrait is not a sticky column) never show it;
+   Tier A/B at ≥ 1024 do. Path `d` is set at runtime from the anchor geometry, so there is nothing to flash. */
+
+.flow {
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+@media (width >= 64rem) {
+  :global(html[data-tier='A']) .flow,
+  :global(html[data-tier='B']) .flow {
+    display: block;
+  }
+}
+
+/* All strokes use pathLength=1000 (see flow-line.tsx) so dash values are the same for any measured curve. */
+.line,
+.maskPath,
+.packets {
+  fill: none;
+  stroke-dasharray: 1000;
+}
+
+.line {
+  stroke: var(--grade-teal);
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+/* Tier A only: soft glow (filter on a decorative layer; Tier B keeps the plain stroke). */
+:global(html[data-tier='A']) .glow {
+  filter: url('#flow-glow');
+}
+
+/* Mask stroke: the packets are only visible on the part of the line that has been drawn. */
+.maskPath {
+  stroke: #fff;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+/* 'Energy packets': square pixel dashes riding along the drawn line, offset driven by scroll progress. */
+.packets {
+  stroke: color-mix(in srgb, var(--grade-teal) 45%, #fff);
+  stroke-width: 2;
+  stroke-linecap: butt;
+  stroke-dasharray: 6 34;
+}
+
+/* Where the line plugs into the ruler. */
+.plug {
+  fill: var(--grade-teal);
+}

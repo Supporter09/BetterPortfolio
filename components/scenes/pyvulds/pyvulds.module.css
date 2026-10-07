@@ -1,0 +1,591 @@
+/* Scene 04 — Feature presentation (research). Tokens from app/globals.css; plain CSS (no @apply). */
+
+/* ------------------------------------------------------------------
+   Pin frame (Pin #1). Normal flow by default; `data-pin="on"` is set by
+   the motion setup only while the pin condition matches (Tier A, ≥1024×720).
+------------------------------------------------------------------- */
+.pinFrame {
+  position: relative;
+}
+
+.letterbox {
+  display: none;
+}
+
+.pinFrame[data-pin="on"] {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  overflow: hidden;
+  padding-top: calc(max(var(--spacing-hud), 6svh) + 0.75rem);
+  padding-bottom: calc(max(var(--spacing-timecode), 6svh) + 0.75rem);
+}
+
+/* Auto margins centre when there is room and collapse to 0 when the panel is taller (no top clipping). */
+.pinFrame[data-pin="on"] > .pinInner {
+  margin-block: auto;
+}
+
+.pinFrame[data-pin="on"] > .letterbox {
+  position: absolute;
+  inset-inline: 0;
+  z-index: 2;
+  display: block;
+  height: 6svh;
+  pointer-events: none;
+  background-color: var(--bg-0);
+}
+
+.letterbox[data-lb="top"] {
+  top: 0;
+  border-bottom: 1px solid var(--line);
+  transform-origin: 50% 0;
+}
+
+.letterbox[data-lb="bottom"] {
+  bottom: 0;
+  border-top: 1px solid var(--line);
+  transform-origin: 50% 100%;
+}
+
+/* ------------------------------------------------------------------
+   Typing beat (round 2 §4). Static flow by default (Tier C / no-JS):
+   title (display-xl) / quote (display-md) / tail (heading-md) stacked
+   with a resting caret. `data-typing="on"` is set by the motion setup
+   (Tier A/B, fonts ready): title + quote share one grid cell so the
+   quote types where the title was deleted. Both stay in flow (only the
+   chars' opacity changes), so the row is sized by the taller line and
+   nothing shifts while typing; the caret becomes a free block moved
+   with transforms only, scaled per line from the char box.
+------------------------------------------------------------------- */
+.beat {
+  position: relative;
+  display: grid;
+  row-gap: 0.75rem;
+}
+
+.beatLine,
+.beatTail {
+  margin: 0;
+}
+
+.beatTail {
+  font-style: italic;
+}
+
+.beat[data-typing="on"] > .beatLine {
+  grid-area: 1 / 1;
+  align-self: end;
+}
+
+.beat[data-typing="on"] > .beatTail {
+  grid-row: 2;
+}
+
+/* Pixel caret ▌ — half-block in the teal grade; static em from the tail line, rescaled per line when typing. */
+.caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.8em;
+  margin-left: 0.12em;
+  vertical-align: -0.06em;
+  background-color: var(--grade-teal);
+}
+
+.beat[data-typing="on"] .caret {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  animation: caret-blink 1.1s steps(2, jump-none) infinite;
+}
+
+@keyframes caret-blink {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Featured panel (inside PerforationFrame)
+------------------------------------------------------------------- */
+.panel {
+  --perf-strip: var(--bg-1);
+}
+
+.panelBody {
+  display: grid;
+  gap: 1.75rem;
+  padding: 1.25rem;
+  background:
+    radial-gradient(120% 60% at 0% 0%, color-mix(in srgb, var(--grade-teal) 7%, transparent), transparent 60%),
+    var(--bg-0);
+}
+
+@media (width >= 48rem) {
+  .panelBody {
+    padding: 1.75rem;
+    gap: 2rem;
+  }
+}
+
+@media (width >= 64rem) {
+  .panelBody {
+    gap: 1.5rem;
+    padding: 1.5rem 1.75rem;
+  }
+}
+
+@media (width >= 90rem) {
+  .panelBody {
+    gap: 1.75rem;
+    padding: 1.75rem 2rem;
+  }
+}
+
+/* STILL ROLLING camera-report strip */
+.strip {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Tally line: a short rec-red fade under the strip while rolling (decorative). */
+.strip[data-rolling]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: min(40%, 22rem);
+  height: 1px;
+  background: linear-gradient(90deg, var(--rec), transparent);
+  opacity: 0.8;
+}
+
+.takeBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 1.5rem;
+  padding-right: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-pixel);
+  font-size: var(--text-pixel-sm);
+  font-weight: 400;
+  letter-spacing: var(--text-pixel-sm--letter-spacing);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* Clapper stripes */
+.takeBox::before {
+  content: "";
+  align-self: stretch;
+  width: 0.875rem;
+  background: repeating-linear-gradient(-45deg, var(--ink-2) 0 2px, transparent 2px 5px);
+  opacity: 0.55;
+}
+
+.timecode {
+  font-size: var(--text-heading-lg);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.areaChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------------
+   Pipeline
+------------------------------------------------------------------- */
+.pipeline {
+  display: grid;
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  column-gap: 1rem;
+  padding-bottom: 1.25rem;
+}
+
+.stage:last-child {
+  padding-bottom: 0;
+}
+
+.rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+}
+
+.node {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  color: var(--ink);
+}
+
+.nodeRing {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+
+.stage[data-optional] .nodeRing circle {
+  stroke-dasharray: 3 3;
+}
+
+.nodeLit {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--grade-teal);
+  border-radius: 9999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--grade-teal) 28%, transparent), color-mix(in srgb, var(--grade-teal) 8%, transparent) 70%);
+}
+
+.stage[data-optional] .nodeLit {
+  border-style: dashed;
+}
+
+/* Static hairline track; the teal SVG inside is what gets clipped on scroll. */
+.conn {
+  position: relative;
+  display: block;
+}
+
+.conn svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.conn line {
+  stroke: var(--grade-teal);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
+
+.conn line[data-dashed] {
+  stroke-dasharray: 4 4;
+}
+
+.connX {
+  display: none;
+}
+
+.connY {
+  flex: 1;
+  width: 2px;
+  min-height: 1rem;
+  margin-top: 0.25rem;
+  margin-bottom: calc(-1.25rem + 0.25rem);
+  background: linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat;
+}
+
+.stageText {
+  min-width: 0;
+  padding-top: 0.5rem;
+}
+
+/* One short line under the diagram: the optional branch (label in pixel, detail in body-sm). */
+.pipelineNote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+  max-width: 72ch;
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  color: var(--ink-2);
+}
+
+.branchTag {
+  display: inline-flex;
+  align-items: center;
+  height: 1.25rem;
+  padding: 0 0.375rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-pixel);
+  font-size: var(--text-pixel-xs);
+  font-weight: 400;
+  letter-spacing: var(--text-pixel-xs--letter-spacing);
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.branchOptional {
+  border-style: dashed;
+  border-color: var(--grade-teal);
+  color: var(--grade-teal);
+}
+
+@media (width >= 64rem) {
+  .pipeline {
+    grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr));
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+  }
+
+  .rail {
+    flex-direction: row;
+    align-self: auto;
+    width: 100%;
+  }
+
+  .connX {
+    display: block;
+    flex: 1;
+    height: 2px;
+    margin-inline: 0.375rem;
+    background: linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat;
+  }
+
+  .connY {
+    display: none;
+  }
+
+  .stageText {
+    padding-top: 0.75rem;
+    padding-right: 1rem;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Evidence tiles
+------------------------------------------------------------------- */
+.tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+@media (width >= 48rem) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 64rem) {
+  .tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Tier C swaps the tiles for the results <table> (only one variant in the a11y tree). Unlayered,
+   so it must live here: a Tailwind `tier-c:hidden` would lose to `.tiles { display: grid }`. */
+:global(html[data-tier="C"]) .tiles {
+  display: none;
+}
+
+.tile {
+  position: relative;
+  padding: 1rem 1.125rem;
+  border: 1px solid var(--line);
+  background-color: var(--bg-1);
+}
+
+.tile::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 2.5rem;
+  height: 1px;
+  background-color: var(--grade-teal);
+}
+
+.vizLabel {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.barTrack {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  background-color: var(--line);
+}
+
+.barFill {
+  position: absolute;
+  inset: 0;
+  background-color: var(--grade-teal);
+  transform-origin: 0 50%;
+}
+
+.barFillMuted {
+  background-color: var(--ink-3);
+}
+
+.cells {
+  display: grid;
+  grid-template-columns: repeat(var(--cells), minmax(0, 1fr));
+  gap: 3px;
+}
+
+.cell {
+  height: 0.75rem;
+  border: 1px solid var(--line-strong);
+}
+
+.cell[data-on] {
+  border-color: var(--grade-teal);
+  background-color: var(--grade-teal);
+}
+
+.axis {
+  position: relative;
+  height: 0.75rem;
+  background:
+    linear-gradient(var(--line-strong), var(--line-strong)) 0 50% / 100% 1px no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) 0 0 / 1px 100% no-repeat,
+    linear-gradient(var(--line-strong), var(--line-strong)) 100% 0 / 1px 100% no-repeat;
+}
+
+.band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: var(--grade-teal);
+}
+
+/* Rack focus: three identical grids stacked. Soft = baked static blur (never scrubbed). */
+.rack {
+  position: relative;
+}
+
+.rackLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 13), minmax(0, 1fr));
+  gap: 5px 4px;
+}
+
+.rackSoft {
+  position: relative;
+  filter: blur(2.5px);
+  opacity: 0.32;
+}
+
+.rackSharp {
+  opacity: 0;
+}
+
+.chip {
+  position: relative;
+  height: 0.5rem;
+  border-radius: 1px;
+  background-color: var(--ink-3);
+}
+
+.chip[data-empty] {
+  background-color: transparent;
+}
+
+.chipFocus {
+  position: absolute;
+  inset: -3px;
+  border: 1px solid var(--grade-teal);
+  border-radius: 2px;
+  background-color: color-mix(in srgb, var(--grade-teal) 70%, transparent);
+}
+
+/* ------------------------------------------------------------------
+   Limitations (always visible, every tier)
+------------------------------------------------------------------- */
+.limits {
+  position: relative;
+  padding: 1rem 1.25rem 1.125rem 1.5rem;
+  border: 1px solid var(--line);
+  background-color: color-mix(in srgb, var(--grade-amber) 4%, var(--bg-1));
+}
+
+.limitsAccent {
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--grade-amber) 45%, transparent);
+  border-left: 2px solid var(--grade-amber);
+}
+
+.limitItem {
+  position: relative;
+  padding-left: 1rem;
+}
+
+.limitItem::before {
+  content: "";
+  position: absolute;
+  top: 0.7em;
+  left: 0;
+  width: 0.5rem;
+  height: 1px;
+  background-color: var(--grade-amber);
+}

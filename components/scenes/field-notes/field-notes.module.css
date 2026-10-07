@@ -1,0 +1,275 @@
+/* Scene 06 — Field Notes (02b Scene 06). Layout modes:
+   < 768px   2-column contact sheet between two sprocket rails
+   ≥ 768px   one horizontal film strip, native scroll-snap, Prev/Next (every tier; user-driven)
+   Tier C    frames start developed (real footage), no light leak, instant toggles              */
+
+.root {
+  /* Aligns the first frame with the 1440 frame's content edge. */
+  --strip-pad: max(var(--spacing-frame), calc((100% - var(--container-frame)) / 2 + var(--spacing-frame)));
+}
+
+/* Light leak: base opacity for SSR / Tier A before the scrub takes over; Tier B fixed 0.25 (02b §6). */
+.leak {
+  opacity: 0.3;
+}
+
+:global(html[data-tier="B"]) .leak {
+  opacity: 0.25;
+}
+
+/* ---------------- Strip ---------------- */
+.strip {
+  position: relative;
+}
+
+.scroller {
+  position: relative;
+}
+
+/* The film: base colour + two sprocket rails that travel with the frames. */
+.track {
+  --film-base: color-mix(in srgb, var(--grade-amber) 4%, var(--bg-1));
+  --hole: var(--bg-0);
+  --rail-h: 16px;
+  --pitch: 26px;
+  --hole-w: 12px;
+  --hole-h: 8px;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem var(--spacing-gutter);
+  margin-inline: var(--spacing-frame);
+  padding: calc(var(--rail-h) + 1rem) 1rem calc(var(--rail-h) + 1rem);
+  background-color: var(--film-base);
+  border-block: 1px solid var(--line);
+}
+
+.track::before,
+.track::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  height: var(--rail-h);
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--hole) 0 var(--hole-w), transparent var(--hole-w)) calc(var(--pitch) / 2) 50% /
+      var(--pitch) var(--hole-h) repeat-x;
+}
+
+.track::before {
+  top: 4px;
+}
+
+.track::after {
+  bottom: 4px;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
+@media (width >= 48rem) {
+  .scroller {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: calc(var(--strip-pad) + 1.25rem);
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+
+  .track {
+    display: flex;
+    width: max-content;
+    min-width: 100%;
+    gap: var(--spacing-gutter);
+    margin-inline: 0;
+    padding-inline: calc(var(--strip-pad) + 1.25rem);
+  }
+
+  .item {
+    flex: none;
+    width: clamp(300px, 30vw, 440px);
+    scroll-snap-align: start;
+  }
+}
+
+/* Landscape phone: keep a whole frame + caption inside the short viewport. */
+@media (width >= 48rem) and (height <= 31.25rem) {
+  .item {
+    width: min(42vw, 360px);
+  }
+}
+
+@media (width >= 90rem) {
+  .item {
+    width: clamp(380px, 26vw, 480px);
+  }
+}
+
+/* ---------------- Frame ---------------- */
+.figure {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.mediaWrap {
+  --neg-rail-w: 10px;
+  --neg-hole-w: 6px;
+  --neg-hole-h: 4px;
+  --neg-pitch: 12px;
+  position: relative;
+  border: 1px solid var(--line);
+  background-color: var(--bg-0);
+}
+
+@media (width >= 48rem) {
+  .mediaWrap {
+    --neg-rail-w: 12px;
+  }
+}
+
+/* Undeveloped = dot-matrix negative: the frame ships as `<MediaFrame dither="always">`, so the Dither
+   canvas (.dither-reveal__canvas, z 4) sits over the footage and the sprocket rails sit over both.
+   Develop = `data-developed="true"` on the figure → canvas crossfades out (opacity only) and the rails
+   fade. The Dither's own toggle is hidden: the figure's Develop button is the single control. B6.5 */
+.media {
+  position: relative;
+}
+
+.media :global(.dither-reveal__toggle) {
+  display: none;
+}
+
+/* Sprocket rails: an opaque film-base strip on each side, holes punched through to the page. */
+.rails {
+  --neg-film: color-mix(in srgb, var(--grade-amber) 22%, var(--bg-0));
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--bg-0) 0 var(--neg-hole-h), transparent var(--neg-hole-h)) left
+      calc((var(--neg-rail-w) - var(--neg-hole-w)) / 2) top calc(var(--neg-hole-h) / 2) /
+      var(--neg-hole-w) var(--neg-pitch) repeat-y,
+    linear-gradient(var(--bg-0) 0 var(--neg-hole-h), transparent var(--neg-hole-h)) right
+      calc((var(--neg-rail-w) - var(--neg-hole-w)) / 2) top calc(var(--neg-hole-h) / 2) /
+      var(--neg-hole-w) var(--neg-pitch) repeat-y,
+    linear-gradient(var(--neg-film) 0 0) left / var(--neg-rail-w) 100% no-repeat,
+    linear-gradient(var(--neg-film) 0 0) right / var(--neg-rail-w) 100% no-repeat;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+}
+
+.figure[data-developed="true"] .media :global(.dither-reveal__canvas),
+.figure:focus-within .media :global(.dither-reveal__canvas) {
+  opacity: 0;
+}
+
+/* Tier C starts developed; pressing Develop again brings the dot matrix back. */
+:global(html[data-tier="C"]) .figure[data-developed="false"]:not(:focus-within) .media :global(.dither-reveal__canvas) {
+  opacity: 1;
+}
+
+.figure[data-developed="true"] .rails,
+.figure:focus-within .rails {
+  opacity: 0;
+  transition-duration: var(--dur-base);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :global(html[data-tier="A"]) .figure:hover .media :global(.dither-reveal__canvas) {
+    opacity: 0;
+  }
+
+  :global(html[data-tier="A"]) .figure:hover .rails {
+    opacity: 0;
+    transition-duration: var(--dur-base);
+  }
+}
+
+/* Develop control covers the whole picture; the focus ring doubles as the frame's viewfinder. */
+.develop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.develop:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Negative / developed tag in the top-left corner of the picture, clear of the rail (decorative, mirrors
+   aria-pressed). Hidden on the <768px contact sheet: the frames are too small for the footage label and
+   the chip to coexist, and the brown negative vs. colour look already carries the state there. */
+.state {
+  position: absolute;
+  top: 0.5rem;
+  left: calc(var(--neg-rail-w) + 0.5rem);
+  z-index: 6;
+  pointer-events: none;
+  display: none;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--line-strong);
+  background-color: color-mix(in srgb, var(--bg-0) 78%, transparent);
+  color: var(--ink-2);
+  transition: color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
+}
+
+@media (width >= 48rem) {
+  .state {
+    display: inline-flex;
+  }
+}
+
+.figure[data-developed="true"] .state {
+  color: var(--grade-amber);
+  border-color: color-mix(in srgb, var(--grade-amber) 50%, transparent);
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+@media (width >= 48rem) {
+  .caption {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* ---------------- Lightbox ---------------- */
+.lightbox {
+  display: flex;
+  flex-direction: column;
+}
+
+.lightboxMedia {
+  border-block: 1px solid var(--line);
+}

@@ -1,0 +1,330 @@
+/* Scene 01 — Opening shot (round 2 §3): copy column + pixel universe. */
+
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  row-gap: clamp(1.5rem, 4svh, 2.5rem);
+  min-height: 100svh;
+  padding-top: calc(var(--spacing-hud) + clamp(1rem, 3svh, 2rem));
+  padding-bottom: clamp(2.5rem, 6svh, 4rem);
+}
+
+@media (width >= 64rem) {
+  .stage {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: var(--spacing-gutter);
+    align-items: center;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Copy column
+---------------------------------------------------------------- */
+.copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-xl);
+  line-height: var(--text-display-xl--line-height);
+  letter-spacing: var(--text-display-xl--letter-spacing);
+  font-weight: var(--text-display-xl--font-weight);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.rule {
+  display: inline-block;
+  width: 2rem;
+  height: 1px;
+  background-color: var(--grade-teal);
+}
+
+/* ---------------------------------------------------------------
+   Universe: a perspective box; everything orbits on one tilted plane.
+   Sizes are driven by three numbers so the bitmaps stay on whole pixels:
+   --cell-self / --cell = CSS px per bitmap cell, --k = orbit radius multiplier.
+---------------------------------------------------------------- */
+.universeCol {
+  position: relative;
+  order: -1;
+}
+
+@media (width >= 64rem) {
+  .universeCol {
+    order: 0;
+  }
+}
+
+.universe {
+  --tilt: 62deg;
+  --k: 0.5;
+  --cell-self: 4;
+  --cell: 2;
+  --px: 0px;
+  --py: 0px;
+  position: relative;
+  width: 100%;
+  height: clamp(240px, 64vw, 300px);
+  overflow: clip;
+  /* Long focal length: real depth sorting + a mild near/far size change (≈ ±7 %) that keeps bitmaps near-crisp. */
+  perspective: 3200px;
+  perspective-origin: 50% 42%;
+}
+
+@media (width >= 48rem) {
+  .universe {
+    --k: 0.72;
+    --cell-self: 5;
+    --cell: 2;
+    height: clamp(300px, 42vw, 360px);
+  }
+}
+
+@media (width >= 64rem) {
+  .universe {
+    --k: 1;
+    --cell-self: 6;
+    --cell: 3;
+    height: clamp(420px, 58svh, 600px);
+  }
+}
+
+@media (width >= 90rem) {
+  .universe {
+    --cell-self: 7;
+  }
+}
+
+/* Stars: behind the plane, a weaker parallax than the orbits. */
+.sky {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(calc(var(--px) * 0.35), calc(var(--py) * 0.35), 0);
+}
+
+.star {
+  position: absolute;
+  opacity: 0.55;
+  translate: -50% -50%;
+}
+
+.star svg {
+  display: block;
+  width: calc(var(--sw) * var(--cell) * 1px);
+  height: calc(var(--sh) * var(--cell) * 1px);
+}
+
+:global(html[data-tier="A"]) .star,
+:global(html[data-tier="B"]) .star {
+  animation: twinkle var(--d, 3s) var(--ease-in-out) var(--delay, 0s) infinite alternate;
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The orbital plane: a 0×0 anchor at the centre, tilted away from the viewer. Children keep their 3D
+   positions, so the browser sorts orbiters in front of / behind the self sprite by real depth. */
+.plane {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: translate3d(var(--px), var(--py), 0) rotateX(var(--tilt));
+}
+
+/* Floor disc under the sprite (projects to an ellipse on the tilted plane). */
+.ground {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(150px * var(--k) + 90px);
+  height: calc(150px * var(--k) + 90px);
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, color-mix(in srgb, var(--grade-teal) 16%, transparent), transparent 70%);
+}
+
+.self {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  transform: rotateX(calc(-1 * var(--tilt)));
+  will-change: opacity;
+}
+
+.self svg {
+  display: block;
+  width: calc(var(--sw) * var(--cell-self) * 1px);
+  height: calc(var(--sh) * var(--cell-self) * 1px);
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--grade-teal) 22%, transparent));
+}
+
+/* One ring per orbiter: a circle on the tilted plane, spun by `orbit`. The static transform equals the first
+   keyframe so Tier C / no-JS (animations off) still shows every orbiter at its own angle (`--phase`). */
+.orbit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--r) * var(--k) * 2px);
+  height: calc(var(--r) * var(--k) * 2px);
+  margin: calc(var(--r) * var(--k) * -1px);
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  transform: rotate(var(--phase));
+}
+
+/* Faint ring line lives on a pseudo so the ring itself keeps full opacity (opacity would flatten the 3D). */
+.orbit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ink) 9%, transparent);
+}
+
+:global(html[data-tier="A"]) .orbit,
+:global(html[data-tier="B"]) .orbit {
+  animation: orbit var(--period) linear infinite;
+}
+
+@keyframes orbit {
+  from {
+    transform: rotate(var(--phase));
+  }
+  to {
+    transform: rotate(calc(var(--phase) + 360deg));
+  }
+}
+
+/* The orbiter sits on the ring's edge; counter-rotation + un-tilt keep the sprite upright and facing the viewer. */
+.orbiter {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  translate: -50% -50%;
+  transform: rotate(calc(-1 * var(--phase))) rotateX(calc(-1 * var(--tilt)));
+}
+
+:global(html[data-tier="A"]) .orbiter,
+:global(html[data-tier="B"]) .orbiter {
+  animation: orbit-counter var(--period) linear infinite;
+}
+
+@keyframes orbit-counter {
+  from {
+    transform: rotate(calc(-1 * var(--phase))) rotateX(calc(-1 * var(--tilt)));
+  }
+  to {
+    transform: rotate(calc(-1 * var(--phase) - 360deg)) rotateX(calc(-1 * var(--tilt)));
+  }
+}
+
+/* Depth cue on top of the real perspective: dimmer on the far side (θ ≈ 270°), brightest up front (θ ≈ 90°). */
+.body {
+  display: block;
+}
+
+:global(html[data-tier="A"]) .body,
+:global(html[data-tier="B"]) .body {
+  animation: orbit-depth var(--period) linear var(--phase-t) infinite;
+}
+
+@keyframes orbit-depth {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  75% {
+    opacity: 0.5;
+  }
+}
+
+.body svg {
+  display: block;
+  width: calc(var(--sw) * var(--cell) * 1px);
+  height: calc(var(--sh) * var(--cell) * 1px);
+}
+
+/* YouTube planet: teal/amber ring around the real channel avatar (pixel-art cat, rendered pixelated). */
+.planet {
+  --size: calc(12px * var(--cell) + 4px);
+  display: grid;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  border: 2px solid var(--grade-teal);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--grade-amber) 55%, transparent),
+    0 0 14px color-mix(in srgb, var(--grade-teal) 30%, transparent);
+  background-color: var(--bg-0);
+  overflow: clip;
+}
+
+.planetImg {
+  display: block;
+  width: calc(var(--size) - 8px);
+  height: calc(var(--size) - 8px);
+  border-radius: 50%;
+  image-rendering: pixelated;
+}
+
+/* Pause / resume (WCAG 2.2.2): freezes every CSS loop in the universe; the pose timer stops in JS. */
+.universe[data-paused] *,
+.universe[data-paused] *::before,
+.universe[data-offscreen] *,
+.universe[data-offscreen] *::before {
+  animation-play-state: paused;
+}
+
+.pause {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
+/* ---------------------------------------------------------------
+   Intro pre-roll (Tier A/B only, never no-JS / Tier C).
+   Hides the copy from first paint until OpeningStage arms the GSAP intro (sets data-intro),
+   so the reveal never flashes final → hidden. Failsafe: fades in by itself if the motion
+   runtime never arrives.
+---------------------------------------------------------------- */
+:global(html[data-tier="A"]) .stage:not([data-intro]) .reveal,
+:global(html[data-tier="B"]) .stage:not([data-intro]) .reveal {
+  opacity: 0;
+  animation: reveal-failsafe 600ms var(--ease-out) 3.4s forwards;
+}
+
+/* Keyboard focus always wins over a pending reveal. */
+.reveal:has(:focus-visible) {
+  opacity: 1 !important;
+}
+
+@keyframes reveal-failsafe {
+  to {
+    opacity: 1;
+  }
+}

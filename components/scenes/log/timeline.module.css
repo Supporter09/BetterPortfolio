@@ -1,0 +1,335 @@
+/* Scene 03 — Timeline. Geometry only; typography/colour classes live in the TSX.
+   Rows set `--f` (start, 0–1), `--w` (width, 0–1) and `--t` (track index); the wrapper sets `--tl-tracks`.
+   `data-label` on a row (in | right | left) is set by the fit measurement in timeline.tsx (see label-fit.ts). */
+
+.tl {
+  --tl-label: 0px;
+  --tl-right: 0px;
+  --tl-track: calc(100% - var(--tl-label) - var(--tl-right));
+  --tl-ruler: 4.25rem;
+  /* Lanes start this far below the baseline so the award pins (half below the line) clear the first bar. */
+  --tl-gap: 0.75rem;
+  --tl-lanes: calc(var(--tl-ruler) + var(--tl-gap));
+  --tl-lane: 3.25rem;
+  --tl-bar: 2.25rem;
+  --tl-pin: 2rem;
+  --tl-tail: 2.5rem;
+  --tl-tick: 0.75rem;
+  --tl-head: calc(var(--tl-lanes) + var(--tl-tracks, 1) * var(--tl-lane));
+  position: relative;
+}
+
+/* ---------------------------------------------------------------
+   Mobile (< 768): vertical list, panel inline under its row
+---------------------------------------------------------------- */
+.decor {
+  display: none;
+}
+
+.list {
+  border-top: 1px solid var(--line);
+}
+
+.item {
+  border-bottom: 1px solid var(--line);
+}
+
+.row {
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  padding-block: 0.875rem;
+  text-align: left;
+  color: inherit;
+}
+
+.fill {
+  display: none;
+}
+
+.text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+}
+
+/* Mobile shows the meta line (org · location · period); the desktop org piece is a desktop-only label part. */
+.org {
+  display: none;
+}
+
+.meta {
+  flex-basis: 100%;
+}
+
+.panel {
+  padding-bottom: 1.75rem;
+}
+
+/* ---------------------------------------------------------------
+   Desktop (≥ 768): year ruler + lanes, panel below the lanes
+---------------------------------------------------------------- */
+@media (width >= 48rem) {
+  .tl {
+    --tl-label: 6.5rem;
+    --tl-right: 2.5rem;
+  }
+
+  .decor {
+    display: block;
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: var(--tl-head);
+    pointer-events: none;
+  }
+
+  /* Marker on the left of the EDUCATION lane: the plug point for the energy line. */
+  .flowTarget {
+    position: absolute;
+    top: calc(var(--tl-lanes) + var(--tl-lane) * 0.5);
+    left: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .tick {
+    position: absolute;
+    top: var(--tl-ruler);
+    bottom: 0;
+    width: 1px;
+    left: calc(var(--tl-label) + var(--tl-track) * var(--f));
+    background: var(--line);
+    transform-origin: top center;
+  }
+
+  .tickLabel {
+    position: absolute;
+    top: 0.25rem;
+    left: calc(var(--tl-label) + var(--tl-track) * var(--f) + 0.375rem);
+  }
+
+  .baseline {
+    position: absolute;
+    top: var(--tl-ruler);
+    left: var(--tl-label);
+    right: var(--tl-right);
+    height: 1px;
+    background: var(--line-strong);
+  }
+
+  .now {
+    position: absolute;
+    top: 0.25rem;
+    bottom: 0;
+    width: 1px;
+    left: calc(var(--tl-label) + var(--tl-track) * var(--f));
+    background: var(--grade-amber);
+  }
+
+  .nowLabel {
+    position: absolute;
+    top: 100%;
+    margin-top: 0.5rem;
+    left: calc(var(--tl-label) + var(--tl-track) * var(--f) + 1px);
+    transform: translateX(-100%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding-right: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .laneLabel {
+    position: absolute;
+    left: 0;
+    top: calc(var(--tl-lanes) + var(--t) * var(--tl-lane));
+    height: var(--tl-lane);
+    display: flex;
+    align-items: center;
+  }
+
+  .laneSep {
+    position: absolute;
+    left: 0;
+    right: var(--tl-right);
+    top: calc(var(--tl-lanes) + var(--t) * var(--tl-lane));
+    height: 1px;
+    background: var(--line);
+    opacity: 0.6;
+  }
+
+  .list {
+    border-top: 0;
+    padding-top: calc(var(--tl-head) + 2.75rem);
+  }
+
+  .item {
+    border-bottom: 0;
+  }
+
+  .row {
+    --c: var(--grade-teal);
+    position: absolute;
+    display: block;
+    min-height: 0;
+    padding: 0;
+    height: var(--tl-bar);
+    top: calc(var(--tl-lanes) + var(--t) * var(--tl-lane) + (var(--tl-lane) - var(--tl-bar)) / 2);
+    left: calc(var(--tl-label) + var(--tl-track) * var(--f));
+    width: max(4px, calc(var(--tl-track) * var(--w)));
+  }
+
+  /* Inside label: clip, so a label that has not been measured yet (SSR) never spills over the ruler. */
+  .row[data-label='in']:not([data-award]) {
+    overflow: hidden;
+  }
+
+  .row[aria-expanded='true'] {
+    --c: var(--grade-amber);
+  }
+
+  .fill {
+    --a: 14%;
+    display: block;
+    position: absolute;
+    inset: 0;
+    border-left: 2px solid var(--c);
+    background: color-mix(in srgb, var(--c) var(--a), transparent);
+    transform-origin: left center;
+    transition:
+      background-color var(--dur-fast) var(--ease-standard),
+      border-color var(--dur-fast) var(--ease-standard);
+  }
+
+  /* Open-ended: solid fill stops `--tl-tail` short of 'now'; a 2px pixel-dashed tail (only there, so it never
+     runs under the label) finishes the run. */
+  .fill[data-open-ended] {
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--c) var(--a), transparent) 0 calc(100% - var(--tl-tail)), transparent calc(100% - var(--tl-tail))),
+      repeating-linear-gradient(90deg, var(--c) 0 3px, transparent 3px 7px);
+    background-size:
+      100% 100%,
+      var(--tl-tail) 2px;
+    background-position:
+      0 0,
+      100% 50%;
+    background-repeat: no-repeat;
+  }
+
+  .row[aria-expanded='true'] .fill {
+    --a: 18%;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .row:hover .fill {
+      --a: 26%;
+    }
+  }
+
+  .text {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    padding-inline: 0.625rem;
+    white-space: nowrap;
+  }
+
+  .org {
+    display: inline;
+  }
+
+  .org[data-off],
+  .meta {
+    display: none;
+  }
+
+  /* Outside label: sits beside the bar on an opaque plate (so the NOW line / dashed tail never cross text),
+     joined to the bar by a 1px connector tick in the bar's colour. */
+  .row[data-label='right'] .text,
+  .row[data-label='left'] .text {
+    padding-inline: 0.375rem;
+    background: var(--bg-0);
+  }
+
+  .row[data-label='right'] .text {
+    left: calc(100% + var(--tl-tick));
+  }
+
+  .row[data-label='left'] .text {
+    left: auto;
+    right: calc(100% + var(--tl-tick));
+  }
+
+  .row[data-label='right'] .text::before,
+  .row[data-label='left'] .text::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: var(--tl-tick);
+    height: 1px;
+    background: var(--c);
+  }
+
+  .row[data-label='right'] .text::before {
+    right: 100%;
+  }
+
+  .row[data-label='left'] .text::before {
+    left: 100%;
+  }
+
+  /* Award pins sit on the ruler baseline; the label shows above the pin (below the year labels, which end at
+     ~1.5rem) on hover / focus / open, flush with the pin's left edge so it never covers the pin or the bars. */
+  .row[data-award] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--tl-pin);
+    height: var(--tl-pin);
+    top: calc(var(--tl-ruler) - var(--tl-pin) / 2);
+    left: calc(var(--tl-label) + var(--tl-track) * var(--f) - var(--tl-pin) / 2);
+    border: 1px solid var(--line-strong);
+    border-radius: 9999px;
+    background: var(--bg-0);
+    z-index: 2;
+    transition: border-color var(--dur-fast) var(--ease-standard);
+  }
+
+  .row[data-award][aria-expanded='true'] {
+    border-color: var(--grade-amber);
+  }
+
+  .row[data-award] .fill {
+    display: none;
+  }
+
+  .row[data-award] .text {
+    left: 0;
+    top: auto;
+    bottom: calc(100% + 0.25rem);
+    height: 1.5rem;
+    padding-inline: 0.375rem;
+    border: 1px solid var(--line);
+    background: var(--bg-0);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-fast) var(--ease-standard);
+  }
+
+  .row[data-award]:hover .text,
+  .row[data-award]:focus-visible .text,
+  .row[data-award][aria-expanded='true'] .text {
+    opacity: 1;
+  }
+
+  .panel {
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+    padding-bottom: 0;
+  }
+}

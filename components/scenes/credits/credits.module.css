@@ -1,0 +1,224 @@
+/* Scene 08 — Achievements (02b Scene 07). End-credits two-column <dl>; nothing here ever moves by itself. */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  max-width: 64rem;
+  margin-inline: auto;
+}
+
+/* First row of each beat (scholarships, competition results, KAIST + English) gets a hairline. */
+.sectionStart {
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--line);
+}
+
+/* Mobile: role above, name below. */
+.row {
+  display: grid;
+  gap: 0.375rem 0;
+}
+
+/* Role: pixel label + a 16px bitmap icon (trophy for competition results, grad cap for academic rows). */
+.role {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ink-3);
+}
+
+.roleIcon {
+  flex: none;
+}
+
+.name {
+  margin: 0;
+  color: var(--ink);
+}
+
+.detail {
+  color: var(--ink-2);
+}
+
+/* ≥768: two columns meeting on the centre axis — role right-aligned (mono), name left-aligned (sans). */
+@media (width >= 48rem) {
+  .row {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: baseline;
+  }
+
+  .role {
+    grid-column: 1;
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .name {
+    grid-column: 2;
+  }
+}
+
+/* Decorative film-leader watermark "08" (Geist display): drifts with scroll in Tier A only (B7.3). */
+.watermark {
+  position: absolute;
+  right: -0.06em;
+  bottom: -0.12em;
+  z-index: 0;
+  font-family: var(--font-display);
+  font-size: clamp(14rem, 42vw, 40rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: color-mix(in srgb, var(--ink) 4%, transparent);
+  pointer-events: none;
+  user-select: none;
+}
+
+.watermark::before {
+  content: "";
+  position: absolute;
+  top: 0.22em;
+  right: 0.1em;
+  width: 0.78em;
+  height: 0.78em;
+  border: 0.015em solid color-mix(in srgb, var(--ink) 5%, transparent);
+  border-radius: 50%;
+}
+
+:global(html[data-tier="A"]) .watermark {
+  will-change: transform;
+}
+
+/* Evidence client island */
+.evidenceRow {
+  position: relative;
+}
+
+.evidenceRow[data-open="true"] {
+  z-index: 30;
+}
+
+.evidenceTrigger {
+  appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  cursor: pointer;
+  border-radius: 2px;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color var(--dur-instant) var(--ease-standard),
+              text-decoration-color var(--dur-instant) var(--ease-standard);
+}
+
+.evidenceTrigger:hover,
+.evidenceTriggerActive {
+  color: var(--ink);
+  text-decoration-color: var(--grade-amber);
+}
+
+.evidenceTrigger:focus-visible {
+  outline: 2px solid var(--grade-amber);
+  outline-offset: 2px;
+}
+
+.proofCue {
+  display: inline-flex;
+  align-self: center;
+  flex: none;
+  color: var(--ink-3);
+  transform: translateY(-1px);
+  transition: color var(--dur-instant) var(--ease-standard);
+}
+
+.evidenceTrigger:hover .proofCue,
+.evidenceTriggerActive .proofCue {
+  color: var(--grade-amber);
+}
+
+.evidencePlate {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  width: min(21rem, calc(100vw - 2.5rem));
+  max-width: 100%;
+  z-index: 30;
+  background: var(--bg-1);
+  border: 1px solid var(--line-strong);
+  padding: 0.625rem;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--line);
+  border-radius: 2px;
+  animation: evidencePlateIn 140ms var(--ease-standard) both;
+}
+
+/* Hit bridge across the 0.5rem visual gap between row and plate so pointer travel keeps preview open */
+.evidencePlate::before {
+  content: "";
+  position: absolute;
+  top: -0.5rem;
+  left: 0;
+  right: 0;
+  height: 0.5rem;
+  pointer-events: auto;
+}
+
+@keyframes evidencePlateIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evidencePlate {
+    animation: none;
+  }
+}
+
+.plateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.375rem;
+  margin-bottom: 0.375rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.plateLabel {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plateBadge {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: var(--grade-amber);
+  text-transform: uppercase;
+  flex: none;
+}
+
+.plateMedia {
+  position: relative;
+  border-radius: 1px;
+}
