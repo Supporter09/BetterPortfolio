@@ -34,6 +34,12 @@ export function CreditEntry({ credit }: CreditEntryProps) {
     triggerRef.current?.focus();
   };
 
+  const open = () => {
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new CustomEvent('credit-evidence-open', { detail: buttonId }));
+    }
+    setIsOpen(true);
+  };
   // Close when tapping/clicking outside or pressing Escape (even when opened by hover with focus elsewhere)
   useEffect(() => {
     if (!isOpen) return;
@@ -61,11 +67,39 @@ export function CreditEntry({ credit }: CreditEntryProps) {
     };
   }, [isOpen]);
 
+  // Ensure only one evidence plate is open at a time across the entire achievements list
+  useEffect(() => {
+    const handleOtherOpen = (e: Event) => {
+      const custom = e as CustomEvent<string>;
+      if (custom.detail !== buttonId) {
+        setIsOpen(false);
+        suppressedRef.current = false;
+      }
+    };
+    document.addEventListener('credit-evidence-open', handleOtherOpen);
+    return () => {
+      document.removeEventListener('credit-evidence-open', handleOtherOpen);
+    };
+  }, [buttonId]);
+  // Elevate parent row's stacking context so floating plate renders above subsequent rows
+  useEffect(() => {
+    const parentRow = entryRef.current?.closest('[data-credit-row]');
+    if (!parentRow) return;
+    if (isOpen) {
+      parentRow.setAttribute('data-evidence-open', 'true');
+    } else {
+      parentRow.removeAttribute('data-evidence-open');
+    }
+    return () => {
+      parentRow.removeAttribute('data-evidence-open');
+    };
+  }, [isOpen]);
+
   const handlePointerEnter = (e: React.PointerEvent) => {
     if (e.pointerType === 'touch') return;
     isHoveredRef.current = true;
     if (!suppressedRef.current) {
-      setIsOpen(true);
+      open();
     }
   };
 
@@ -94,7 +128,7 @@ export function CreditEntry({ credit }: CreditEntryProps) {
       isFocusVisible = false;
     }
     if (isFocusVisible) {
-      setIsOpen(true);
+      open();
     }
   };
 
@@ -119,6 +153,9 @@ export function CreditEntry({ credit }: CreditEntryProps) {
         suppressedRef.current = true;
       } else {
         suppressedRef.current = false;
+        if (typeof document !== 'undefined') {
+          document.dispatchEvent(new CustomEvent('credit-evidence-open', { detail: buttonId }));
+        }
       }
       return next;
     });

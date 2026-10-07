@@ -54,7 +54,15 @@ export function CreditsStage({ className, children }: { className?: string; chil
       ScrollTrigger.batch(rows, {
         start: 'top 85%',
         once: true,
-        onEnter: (batch) => gsap.to(batch, { opacity: 1, y: 0, duration: 0.32, ease: EASE_OUT, stagger: 0.04 }),
+        onEnter: (batch) =>
+          gsap.to(batch, {
+            opacity: 1,
+            y: 0,
+            duration: 0.32,
+            ease: EASE_OUT,
+            stagger: 0.04,
+            clearProps: 'transform',
+          }),
       });
     }
 

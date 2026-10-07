@@ -16,8 +16,14 @@
 
 /* Mobile: role above, name below. */
 .row {
+  position: relative;
   display: grid;
   gap: 0.375rem 0;
+}
+
+.row[data-evidence-open="true"],
+.row:has([data-open="true"]) {
+  z-index: 40;
 }
 
 /* Role: pixel label + a 16px bitmap icon (trophy for competition results, grad cap for academic rows). */
@@ -97,7 +103,7 @@
 }
 
 .evidenceRow[data-open="true"] {
-  z-index: 30;
+  z-index: 40;
 }
 
 .evidenceTrigger {
@@ -153,11 +159,11 @@
   left: 0;
   width: min(21rem, calc(100vw - 2.5rem));
   max-width: 100%;
-  z-index: 30;
+  z-index: 50;
   background: var(--bg-1);
   border: 1px solid var(--line-strong);
   padding: 0.625rem;
-  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--line);
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--line);
   border-radius: 2px;
   animation: evidencePlateIn 140ms var(--ease-standard) both;
 }
