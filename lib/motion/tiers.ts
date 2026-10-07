@@ -5,18 +5,26 @@ import { DESKTOP_FINE_QUERY, MOTION_CONDITIONS, MOTION_PREF_KEY } from '@/lib/mo
 
 export type MotionTier = 'A' | 'B' | 'C';
 
-/** True when the visitor chose "Motion: off" (persisted in localStorage.runtime_motion). */
-export function getMotionOptOut(): boolean {
+/** Returns user-chosen preference: 'on' | 'off' | null (unset). */
+export function getMotionPreference(): 'on' | 'off' | null {
   try {
-    return localStorage.getItem(MOTION_PREF_KEY) === 'off';
+    const val = localStorage.getItem(MOTION_PREF_KEY);
+    return val === 'on' || val === 'off' ? val : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
-/** Same decision as the inline boot script: opt-out → reduce → desktop+fine → B. */
-function computeTier(optOut = getMotionOptOut()): MotionTier {
-  if (optOut) return 'C';
+/** Backward compatibility helper for opt-out check. */
+export function getMotionOptOut(): boolean {
+  return getMotionPreference() === 'off';
+}
+
+/** Explicit 'on' overrides OS reduce; explicit 'off' forces C; otherwise OS reduce → C → desktop+fine → B. */
+function computeTier(): MotionTier {
+  const pref = getMotionPreference();
+  if (pref === 'off') return 'C';
+  if (pref === 'on') return window.matchMedia(DESKTOP_FINE_QUERY).matches ? 'A' : 'B';
   if (window.matchMedia(MOTION_CONDITIONS.reduce).matches) return 'C';
   return window.matchMedia(DESKTOP_FINE_QUERY).matches ? 'A' : 'B';
 }
@@ -75,14 +83,12 @@ export function useMotionTier(): MotionTier | null {
  */
 export function setMotionEnabled(enabled: boolean): void {
   try {
-    if (enabled) localStorage.removeItem(MOTION_PREF_KEY);
-    else localStorage.setItem(MOTION_PREF_KEY, 'off');
+    localStorage.setItem(MOTION_PREF_KEY, enabled ? 'on' : 'off');
   } catch {
     // storage blocked: still apply for this page view below
   }
   const root = document.documentElement;
   if (!enabled) delete root.dataset.boot; // never leave the cold open mid-play in Tier C
-  // Apply from the requested value (not storage) so it works even when storage is blocked.
-  root.dataset.tier = computeTier(!enabled);
+  root.dataset.tier = computeTier();
   listeners.forEach((listener) => listener());
 }
